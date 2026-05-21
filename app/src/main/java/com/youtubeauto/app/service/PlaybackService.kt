@@ -5,18 +5,15 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Build
-import android.os.Bundle
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
-import com.youtubeauto.app.R
 import com.youtubeauto.app.data.YouTubeRepository
 import com.youtubeauto.app.ui.MainActivity
 import kotlinx.coroutines.CoroutineScope
@@ -88,11 +85,7 @@ class PlaybackService : MediaSessionService() {
                         ?: item.mediaId
                     runCatching {
                         val stream = repository.getStreamUrl(videoId)
-                        stream?.let {
-                            item.buildUpon()
-                                .setUri(it.streamUrl)
-                                .build()
-                        }
+                        stream?.let { item.buildUpon().setUri(it.streamUrl).build() }
                     }.getOrNull()
                 }
                 future.set(resolved)
@@ -107,15 +100,14 @@ class PlaybackService : MediaSessionService() {
                 CHANNEL_ID, "YouTube Auto Playback",
                 NotificationManager.IMPORTANCE_LOW
             )
-            getSystemService(NotificationManager::class.java)
-                .createNotificationChannel(channel)
+            getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
         }
     }
 
     private fun startForegroundNotification() {
         val intent = Intent(this, MainActivity::class.java)
         val pi = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-        val notification = androidx.core.app.NotificationCompat.Builder(this, CHANNEL_ID)
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("YouTube Auto")
             .setContentText("Ready to play")
             .setSmallIcon(android.R.drawable.ic_media_play)

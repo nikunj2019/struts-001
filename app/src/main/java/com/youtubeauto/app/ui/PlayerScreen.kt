@@ -66,7 +66,7 @@ class PlayerScreen(
             try {
                 isLoading = true
                 invalidate()
-                val stream = repository.getStreamUrl(video.id) ?: return@launch
+                repository.getStreamUrl(video.id) ?: return@launch
                 val serviceIntent = Intent(carContext, PlaybackService::class.java)
                 carContext.startForegroundService(serviceIntent)
                 isLoading = false
