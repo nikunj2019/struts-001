@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.youtubeauto.app"
-        minSdk = 23
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0.0"
@@ -40,9 +40,8 @@ android {
 }
 
 dependencies {
-    // Android Auto / Car App Library
+    // Android Auto (phone projection — NOT app-automotive which needs minSdk 29)
     implementation("androidx.car.app:app:1.4.0")
-    implementation("androidx.car.app:app-automotive:1.4.0")
 
     // Media3 / ExoPlayer
     implementation("androidx.media3:media3-exoplayer:1.3.1")

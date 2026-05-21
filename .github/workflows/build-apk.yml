@@ -18,26 +18,20 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Download gradle-wrapper.jar
-        run: |
-          mkdir -p gradle/wrapper
-          curl -sL "https://github.com/gradle/gradle/raw/v8.4.0/gradle/wrapper/gradle-wrapper.jar" \
-            -o gradle/wrapper/gradle-wrapper.jar
-          echo "Wrapper jar size: $(wc -c < gradle/wrapper/gradle-wrapper.jar) bytes"
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+      - name: Setup Gradle 8.4
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: "8.4"
 
       - name: Build debug APK
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        run: gradle assembleDebug --no-daemon --stacktrace
 
       - name: Build release APK (debug-signed)
-        run: ./gradlew assembleRelease --no-daemon --stacktrace
+        run: gradle assembleRelease --no-daemon --stacktrace
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
@@ -67,16 +61,8 @@ jobs:
 
             ### Install
             1. Enable **Unknown sources** on your Android phone
-            2. Transfer `app-debug.apk` to your phone (USB / Google Drive / email)
-            3. Tap the file to install
-            4. Open **YouTube Auto** once on your phone and tap **Start Background Service**
-            5. Plug into Android Auto — the app appears automatically
-
-            ### Features
-            - Browse trending videos on the Auto screen
-            - Search YouTube by voice or keyboard input
-            - Streams via Invidious open API (no Google account or API key needed)
-            - ExoPlayer / Media3 HLS + MP4 adaptive playback
-            - Full playback controls: play / pause / stop
+            2. Transfer `app-debug.apk` to your phone and install it
+            3. Open **YouTube Auto** once → tap **Start Background Service**
+            4. Connect to Android Auto — the app appears automatically
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
