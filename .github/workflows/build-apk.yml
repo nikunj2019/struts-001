@@ -18,20 +18,28 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+          cache: gradle
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Setup Gradle 8.4
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: "8.4"
+      - name: Accept SDK licenses and install components
+        run: |
+          yes | sdkmanager --licenses > /dev/null 2>&1 || true
+          sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
+
+      - name: Generate Gradle wrapper using system Gradle
+        run: |
+          gradle --version
+          gradle wrapper --gradle-version=8.4 --distribution-type=bin
+          chmod +x gradlew
+          ls -la gradle/wrapper/
 
       - name: Build debug APK
-        run: gradle assembleDebug --no-daemon --stacktrace
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Build release APK (debug-signed)
-        run: gradle assembleRelease --no-daemon --stacktrace
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
@@ -46,23 +54,3 @@ jobs:
           name: youtube-auto-release
           path: app/build/outputs/apk/release/app-release.apk
           retention-days: 30
-
-      - name: Create GitHub Release
-        if: github.ref == 'refs/heads/main'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ github.run_number }}
-          name: YouTube Auto v${{ github.run_number }}
-          files: |
-            app/build/outputs/apk/debug/app-debug.apk
-            app/build/outputs/apk/release/app-release.apk
-          body: |
-            ## YouTube Android Auto APK
-
-            ### Install
-            1. Enable **Unknown sources** on your Android phone
-            2. Transfer `app-debug.apk` to your phone and install it
-            3. Open **YouTube Auto** once → tap **Start Background Service**
-            4. Connect to Android Auto — the app appears automatically
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
