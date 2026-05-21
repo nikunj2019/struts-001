@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.YouTubeAuto" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <item name="colorPrimary">@color/youtube_red</item>
+        <item name="colorPrimaryVariant">@color/youtube_dark_red</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+        <item name="colorSecondary">@color/youtube_red</item>
+    </style>
+</resources>
