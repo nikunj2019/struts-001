@@ -1,0 +1,5 @@
+-keep class com.youtubeauto.app.** { *; }
+-keep class androidx.car.app.** { *; }
+-keep class androidx.media3.** { *; }
+-dontwarn okhttp3.**
+-dontwarn okio.**
