@@ -12,8 +12,8 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
+import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
-import com.google.common.util.concurrent.SettableFuture
 import com.youtubeauto.app.data.YouTubeRepository
 import com.youtubeauto.app.ui.MainActivity
 import kotlinx.coroutines.CoroutineScope
@@ -49,23 +49,19 @@ class PlaybackService : MediaSessionService() {
     fun playVideo(videoId: String, title: String, channel: String) {
         scope.launch {
             try {
-                val stream = repository.getStreamUrl(videoId)
-                if (stream != null) {
-                    val item = MediaItem.Builder()
-                        .setUri(stream.streamUrl)
-                        .setMediaMetadata(
-                            MediaMetadata.Builder()
-                                .setTitle(title)
-                                .setArtist(channel)
-                                .build()
-                        )
-                        .build()
-                    player.setMediaItem(item)
-                    player.prepare()
-                    player.play()
-                } else {
-                    Log.e(TAG, "Could not resolve stream for $videoId")
-                }
+                val stream = repository.getStreamUrl(videoId) ?: return@launch
+                val item = MediaItem.Builder()
+                    .setUri(stream.streamUrl)
+                    .setMediaMetadata(
+                        MediaMetadata.Builder()
+                            .setTitle(title)
+                            .setArtist(channel)
+                            .build()
+                    )
+                    .build()
+                player.setMediaItem(item)
+                player.prepare()
+                player.play()
             } catch (e: Exception) {
                 Log.e(TAG, "Playback error", e)
             }
@@ -78,19 +74,8 @@ class PlaybackService : MediaSessionService() {
             controller: MediaSession.ControllerInfo,
             mediaItems: List<MediaItem>
         ): ListenableFuture<List<MediaItem>> {
-            val future = SettableFuture.create<List<MediaItem>>()
-            scope.launch(Dispatchers.IO) {
-                val resolved = mediaItems.mapNotNull { item ->
-                    val videoId = item.requestMetadata.mediaUri?.getQueryParameter("v")
-                        ?: item.mediaId
-                    runCatching {
-                        val stream = repository.getStreamUrl(videoId)
-                        stream?.let { item.buildUpon().setUri(it.streamUrl).build() }
-                    }.getOrNull()
-                }
-                future.set(resolved)
-            }
-            return future
+            // Items accepted as-is; URL resolution happens in playVideo()
+            return Futures.immediateFuture(mediaItems)
         }
     }
 

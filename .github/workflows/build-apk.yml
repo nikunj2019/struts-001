@@ -20,26 +20,24 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Accept SDK licenses and install components
+      - name: Download Gradle 8.4 and generate wrapper
         run: |
-          yes | sdkmanager --licenses > /dev/null 2>&1 || true
-          sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
-
-      - name: Generate Gradle wrapper using system Gradle
-        run: |
-          gradle --version
-          gradle wrapper --gradle-version=8.4 --distribution-type=bin
+          curl -sL https://services.gradle.org/distributions/gradle-8.4-bin.zip -o /tmp/gradle.zip
+          unzip -q /tmp/gradle.zip -d /tmp/
+          /tmp/gradle-8.4/bin/gradle wrapper --gradle-version=8.4 --distribution-type=bin
           chmod +x gradlew
-          ls -la gradle/wrapper/
+          echo "=== wrapper jar ==="
+          ls -lh gradle/wrapper/
 
       - name: Build debug APK
         run: ./gradlew assembleDebug --no-daemon --stacktrace
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_SDK_ROOT }}
 
-      - name: Build release APK (debug-signed)
+      - name: Build release APK
         run: ./gradlew assembleRelease --no-daemon --stacktrace
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_SDK_ROOT }}
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
